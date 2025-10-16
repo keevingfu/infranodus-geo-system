@@ -1,0 +1,20 @@
+# InfraNodus GEO System - Python Dependencies
+# ============================================
+
+# Neo4j Python Driver
+neo4j==5.15.0
+
+# HTTP Requests
+requests==2.31.0
+
+# Data Classes (Python 3.7+)
+# dataclasses is built-in for Python 3.7+
+
+# Testing (optional)
+pytest==7.4.3
+pytest-cov==4.1.0
+
+# Code Quality (optional)
+black==23.12.1
+flake8==7.0.0
+mypy==1.8.0
