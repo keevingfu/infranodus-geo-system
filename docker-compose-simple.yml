@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.14
+    container_name: geo-neo4j-test
+    ports:
+      - "7476:7474"  # HTTP
+      - "7689:7687"  # Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/geo_password_2025
+      - NEO4J_dbms_memory_pagecache_size=1G
+      - NEO4J_dbms_memory_heap_initial__size=512M
+      - NEO4J_dbms_memory_heap_max__size=1G
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*,gds.*
+      - NEO4JLABS_PLUGINS=["apoc", "graph-data-science"]
+    volumes:
+      - neo4j-test-data:/data
+      - neo4j-test-logs:/logs
+      - neo4j-test-import:/import
+      - neo4j-test-plugins:/plugins
+      - ./neo4j-schema.cypher:/import/schema.cypher:ro
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "geo_password_2025", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - geo-test-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: geo-redis-test
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes --requirepass redis_password
+    volumes:
+      - redis-test-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - geo-test-network
+
+volumes:
+  neo4j-test-data:
+    driver: local
+  neo4j-test-logs:
+    driver: local
+  neo4j-test-import:
+    driver: local
+  neo4j-test-plugins:
+    driver: local
+  redis-test-data:
+    driver: local
+
+networks:
+  geo-test-network:
+    driver: bridge
